@@ -1,0 +1,7 @@
+what is the difference between classical gradient algorithm (SGD) and adaptive gradient descent algorithm (adam)?
+Tensorboard is a very important visualization tool for neural network. 
+	Installation: pip install Tensorboard
+	Opening tensorboard: tensorboard --logdir=logs/
+	The logs folder must contain the history of training the neural network. This can be done simply bu including a tensorboard callback in keras:
+		model.fit(train_x, train_y, batch_size=batch_size,epochs=epochs,verbose=1, validation_split=0.2, callbacks=[keras.callbacks.TensorBoard(log_dir="logs/final/{}".format(time()), histogram_freq=1, write_graph=True, write_images=True)])
+		write_graph means 
