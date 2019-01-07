@@ -4,4 +4,60 @@ Tensorboard is a very important visualization tool for neural network.
 	Opening tensorboard: tensorboard --logdir=logs/
 	The logs folder must contain the history of training the neural network. This can be done simply bu including a tensorboard callback in keras:
 		model.fit(train_x, train_y, batch_size=batch_size,epochs=epochs,verbose=1, validation_split=0.2, callbacks=[keras.callbacks.TensorBoard(log_dir="logs/final/{}".format(time()), histogram_freq=1, write_graph=True, write_images=True)])
-		write_graph means 
+		write_graph means show the graph as defined internally. 
+		write_images means create an image by combining the weight of neural network
+		histogram_freq means plotting the distrubution of weights and biases in the neural network
+A blog claims that if the aspect ratio of the image is different then there might be issues with the training. - need to check.
+Normalization is the process of converting image resolution from a range of 0 to 255 to a range of 0 to 1. - need to check if normalisation is defined by this only.
+Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift - https://arxiv.org/pdf/1502.03167.pdf
+Overfitting is when the model performs too much better on the training data instead of test data. We can informally say that overfitting is when the model starts memorising values from the training data instead of learning them. 
+According to a blog overfitting can be avoided by
+	regularisation of the data
+	dropouts - randomly droping connections between neural network forcing the network to find new paths and generalise
+List of hyperparameters include kernel size, the number of layers in the neural network, activation function, loss function, optimizer used(gradient descent, RMSprop), batch size, number of epochs to train etc.
+Great learning rate means you will toggle around the global minima but if the learning rate is very less then you will never be able to reach the global minima.
+Optimisers used for classification problem is categorical cross entropy and for regression problem is mean squared error.
+In general the batch size varies from 8, 16, 32 etc.
+RELU is the mostly used activation function right now. Sigmoid and Tanh were previously used functions and they have the problem of vanishing gradient, i.e. during the process of backpropagation the gradient value keeps on decreasing till the time they reach the begining of the layer. Because of this issue, using big architecture of a neural network became not possible. Activation functions are introduced in the network to bring non-linearity to the models. Sigmoid is used in the output layer for binary prediction and softmax is used for multi-class prediction.
+What is the use of activation function and optimisers?
+Ensamble of algorithms how is it done - need more info on this. 
+What is momentum in cnn
+What is bias and variance of the model - low bias means underfitting and high variance means overfitting.
+Colab notebook comes with preinstalled tensorflow and free GPU.
+
+	files = tf.data.Dataset.list_files(file_pattern)
+	dataset = tf.data.TFRecordDataset(files)
+
+	dataset = dataset.shuffle(10000)
+	dataset = dataset.repeat(Num_Epochs)
+	dataset = dataset.map(lamda x: tf.parse_single_example(x, features))
+	dataset = dataset.batch(batch_size)
+
+	iterator = dataset.make_one_shot_iterator()
+	features = iterator.get_next()
+
+The above code has been changed to the following for increasing the execution time:
+	files = tf.data.Dataset.list_files(file_pattern)
+	dataset = tf.data.TFRecordDataset(files, num_parallel_reads=32)
+	
+	dataset = dataset.apply(tf.contrib.data.shuffle_and_repeat(10000, num_of_epochs))
+	dataset = dataset.apply(tf.contrib.data.map_and_batch(lamda x: tf.parse_single_example(x, features),batch_size)
+
+	dataset = dataset.apply(tf.contrib.data.prefetch_to_device("/gpu:0")) 
+	iterator = dataset.make_one_shot_iterator()
+	features = iterator.get_next()
+
+The above code can be further optimised by the following code:
+	tf.enable_eager_execution()
+	dataset = tf.contrib.data.make_batched_features_dataset(file_pattern, batch_size, features, num_epochs=num_epochs)
+	for batch in dataset:
+		train_model(batch)
+
+When the data is stored in csv files then we can make the following:
+	tf.enable_eager_execution()
+	#install kaggle with pip install kaggle
+	dataset = tf.contrib.data.make_csv_dataset("*.csv", batch_size, num_epochs=num_epochs)
+	for batch in dataset:
+		train_model(batch["publish_date"],batch["headline_text"])
+
+tf.data helps in reducing the data starvation of GPU. 

@@ -1,0 +1,16 @@
+tf.data
+code snippet
+	with tf.device('/cpu:0'):
+		dataset = tf.data.Dataset.from_tensor_slices((filenames, labels))
+		dataset = dataset.shuffle(len(filenames))
+		dataset = dataset.map(parse_function, num_parallel_calls=4)
+		dataset = dataset.map(train_preprocess, num_parallel_calls=4)
+		dataset = dataset.batch(batch_size)
+		dataset = dataset.prefetch(1)
+prefetch one batch to make sure that a batch is ready to be served at all time
+the parse_function will read the content of the file; decode using jpeg format; convert to float values in [0, 1]; resize to size (64, 64)
+train_preprocess will perform data augmentation: horizontally flip the image with probability 1/2; apply random brightness and saturation
+put all the data processing pipeline on the CPU to make sure that the GPU is only used for training the deep neural network model
+tf.contrib.data.shuffle_and_repeat() can also be used 
+num_parallel_calls argument helps i parallelization of the data processing pipeline using multiple threads
+In some cases, it can be useful to prefetch more than one batch. For instance if the duration of the preprocessing varies a lot, prefetching 10 batches would average out the processing time over 10 batches, instead of sometimes waiting for longer batches.
